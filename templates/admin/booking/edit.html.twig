@@ -1,0 +1,84 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier la réservation n°{{booking.id}}{% endblock %}
+
+{% block body %}
+    {% set ad = booking.ad %}
+    <div class="container-fluid">
+        <h1 class="my-5">Modification de la réservation pour l'annonce : <em>{{ ad.title }}</em></h1>
+
+        {{ form_start(form) }}
+
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-light">
+                    <h4>Modification des dates du séjour : </h4>
+                    <div class="row">
+                        <div class="col">
+                            {{ form_row(form.startDate) }}
+                        </div>
+                        <div class="col">
+                            {{ form_row(form.endDate) }}
+                        </div>
+                    </div>
+                    <h4 class="mt-2">Montant du séjour : <span id="amount">{{booking.amount}}</span> &euro;</h4>
+                    <span id="days"></span> nuit(s) à {{ad.price | number_format(2,',',' ')}} &euro; par nuit
+
+                    <h4 class="mt-3">Modifier le commentaire :</h4>
+                    {{ form_row(form.comment) }}
+                </div>
+            </div>
+            <div class="col">
+                <div class="alert alert-light clearfix">
+                    <h4 class="mt-3">Modifier le booker :</h4>
+                    {{ form_row(form.booker) }}
+
+                    <h4 class="mt-3">Modifier l'annonce :</h4>
+                    {{ form_row(form.ad) }}
+
+                    <button type="submit" class="btn btn-primary float-right">Enregistrer les modifications</button>
+
+                </div>
+            </div>
+        </div>
+        
+
+            
+
+
+
+        {{ form_end(form) }}
+
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+    <script>
+        $(document).ready(function(){
+            
+            $('#admin_booking_startDate, #admin_booking_endDate').on('change', calculateAmount);
+
+        });
+
+        function calculateAmount(){
+            console.log($('#admin_booking_endDate').val());
+            //On récupère les dates
+            const endDate = new Date($('#admin_booking_endDate').val());
+            //18/09/2018 to 2018-09-18 -> (\d+)\/(\d+)\/(\d{4})
+            const startDate = new Date($('#admin_booking_startDate').val());
+
+            if(startDate && endDate && startDate < endDate){
+                const DAY_TIME = 24*60*60*1000;
+                const interval = endDate.getTime() - startDate.getTime();
+                const days = interval / DAY_TIME;
+                const amount = days * {{ booking.ad.price }};
+
+                $('#days').text(days);
+                $('#amount').text(amount.toLocaleString('fr-FR'));
+            }
+        }
+    </script>
+{% endblock %}
+

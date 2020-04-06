@@ -6,7 +6,7 @@
 {% set ad = booking.ad %}
 {% set author = ad.author %}
 <div class="container">
-    <h1>Votre réservation (n°{{booking.id}})</h1>
+    <h1 class="my-5">Votre réservation (n°{{booking.id}})</h1>
 
     {% if app.request.query.get('withAlert') %}
         <div class="alert alert-success">
@@ -39,9 +39,9 @@
                     <div class="col-md-4">Nombre de nuits</div>
                     <div class="col-md-8">{{booking.duration}}</div>
                     <div class="col-md-4">Montant total</div>
-                    <div class="col-md-8">{{booking.amount}} &euro;</div>
+                    <div class="col-md-8">{{booking.amount | number_format(2, ',', ' ')}} &euro;</div>
                     <div class="col-md-4">Commentaire</div>
-                    <div class="col-md-8">{{booking.comment}}</div>              
+                    <div class="col-md-8">{{booking.comment | default('Aucun commentaires')}}</div>              
                 </dl>
 
                 <hr>
@@ -64,7 +64,29 @@
 
                 <a href="{{path('user_show', {'slug': author.slug})}}" class="btn btn-primary">Plus d'infos sur {{author.firstName}}</a>
             </div>
+
+            <div class="alert alert-light" id="comment">
+                <h2 class="alert-heading">Votre avis compte !</h2>
+                {% if date() > date(booking.endDate) %}
+                    {% set comment = booking.ad.commentFromAuthor(app.user) %}
+                    {% if comment is not null %}
+                        <blockquote>
+                            {{comment.content}}
+                        </blockquote>
+
+                        <strong>Note : </strong> {% include 'partials/rating.html.twig' with {'rating': comment.rating} %}
+                    {% else %}
+                        {{ form_start(form)}}
+                        {{ form_widget(form) }}
+                        <button type="submit" class="btn btn-success">Vous confirmez ?</button>
+                        {{ form_end(form) }}
+                    {% endif %}
+                {% else %}
+                    <p>Vous ne pourrez pas noter cette annonce tant que votre voyage ne sera pas complet.</p>
+                {% endif %}
+            </div>
         </div>
+
         <div class="col">
             <div class="alert alert-light">
                 <h2 class="alert-heading">Votre hébergement</h2>
